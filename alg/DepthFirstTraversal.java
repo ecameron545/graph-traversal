@@ -4,7 +4,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import adt.Graph;
+import adt.Queue;
 import adt.Stack;
+import impl.ListQueue;
 import impl.ListStack;
 
 /**
@@ -70,15 +72,38 @@ public class DepthFirstTraversal implements Traversal {
             public Iterator<Integer> iterator() {
                 return new Iterator<Integer>() {
                     int time = 1;
+                    
+					// return false only when the stack (worklist) is empty.
                     public boolean hasNext() {
-                        // Add code
-                    	throw new UnsupportedOperationException();
-                    }
-                    public Integer next() {
-                        // Add code
-                    	throw new UnsupportedOperationException();
+                    	return !worklist.isEmpty();
                     }
                     
+                    public Integer next() {
+                    	// empty stack check
+						if (!hasNext())
+							return null;
+
+						// the current vertex for which we are analyzing the adjacent vertices
+						int current = worklist.pop();
+
+						// run through all the adjacent vertices to current
+						for (Integer i : g.adjacents(current)) {
+
+							// if the adjacent vertices have already been discovered
+							// or is the starting vertex, skip it.
+							if (parents[i] != -1 || i == start)
+								continue;
+							
+							// otherwise update the distance and parent values for the newly
+							// discovered vertex and put it in the queue.
+							else {
+								discoveryTimes[i] = time++;
+								parents[i] = current;
+								worklist.push(i);
+							}
+						}
+						return current;
+                    }
                 };
             }
         };
@@ -98,10 +123,36 @@ public class DepthFirstTraversal implements Traversal {
             parents[i] = discoveryTimes[i] = -1;
         int time = 0;
         
-        // Add code
-    	throw new UnsupportedOperationException();
-          
-        
-        
+        final Stack<Integer> worklist = new ListStack<Integer>();
+		worklist.push(start);
+
+		
+		// keep moving through the graph until the worklist is empty which means there
+		// are no new vertices to perform the operation on.
+		while (!worklist.isEmpty()) {
+			
+			// the current vertex for which we are analyzing the adjacent vertices
+			int current = worklist.pop();
+
+			// run through all the adjacent vertices to current
+			for (Integer i : g.adjacents(current)) {
+
+				// if the adjacent vertices have already been discovered
+				// or is the starting vertex, skip it.
+				if (parents[i] != -1 || i == start)
+					continue;
+
+				// otherwise update the distance and parent values for the newly
+				// discovered vertex and put it in the queue.
+				else {
+					discoveryTimes[i] = time++;
+					parents[i] = current;
+					worklist.push(i);
+				}
+			}
+			
+			op.perform(current); // perform the operation on the current vertex
+		}
+           
     }
 }
